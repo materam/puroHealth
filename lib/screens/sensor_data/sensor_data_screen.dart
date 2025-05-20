@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import '../results/results_screen.dart';
 
 class SensorDataScreen extends StatefulWidget {
-  final Map<String, dynamic>?
-  previousAnswers; // If you want to pass previous data
+  final Map<String, dynamic>? previousAnswers;
 
   const SensorDataScreen({super.key, this.previousAnswers});
 
@@ -21,39 +20,32 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
   String? _gsrError;
   String? _tempError;
 
-  // Example: Calculate a normalized score based on medical research
   double? calculatePhysiologicalScore() {
     double? heartRate = double.tryParse(heartRateController.text);
     double? gsr = double.tryParse(gsrController.text);
     double? temp = double.tryParse(tempController.text);
 
-    // Example normal ranges (can be adjusted based on research)
-    // Heart Rate: 60-100 bpm, GSR: 2-15 µS, Temp: 36.1-37.2°C
-    if (heartRate == null && gsr == null && temp == null) return null;
+    if (heartRate == null || gsr == null || temp == null) return null;
 
     double score = 0;
     int count = 0;
 
-    if (heartRate != null) {
-      // Lower score if within normal range, higher if outside
-      if (heartRate < 60 || heartRate > 100) {
-        score += 1;
-      }
-      count++;
+    if (heartRate < 60 || heartRate > 100) {
+      score += 1;
     }
-    if (gsr != null) {
-      if (gsr < 2 || gsr > 15) {
-        score += 1;
-      }
-      count++;
+    count++;
+
+    if (gsr < 2 || gsr > 15) {
+      score += 1;
     }
-    if (temp != null) {
-      if (temp < 36.1 || temp > 37.2) {
-        score += 1;
-      }
-      count++;
+    count++;
+
+    if (temp < 36.1 || temp > 37.2) {
+      score += 1;
     }
-    return count > 0 ? (score / count) : null; // 0 = normal, 1 = all abnormal
+    count++;
+
+    return count > 0 ? (score / count) : null;
   }
 
   @override
@@ -64,6 +56,7 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
         title: RichText(
           text: TextSpan(
             children: [
@@ -86,10 +79,6 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
             ],
           ),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.brightness_6), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -121,39 +110,29 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
               const SizedBox(height: 8),
               Center(
                 child: Text(
-                  'These readings help provide a more complete stress assessment. ',
+                  'Please enter your current physiological readings. These values are required for a complete and accurate stress assessment.',
                   style: TextStyle(
                     fontSize: 15,
                     color: isDark ? Colors.grey[400] : Colors.grey[700],
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 4, bottom: 20),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Optional',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF181C23) : Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.lightBlueAccent.withAlpha(
+                        (0.08 * 255).toInt(),
+                      ),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,14 +145,6 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                         color: isDark ? Colors.white : Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Enter any measurements you have available.\nLeave fields blank if you don't have the data.",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: isDark ? Colors.grey[400] : Colors.grey[700],
-                      ),
-                    ),
                     const SizedBox(height: 18),
                     // Heart Rate
                     Row(
@@ -182,7 +153,10 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                         const SizedBox(width: 8),
                         Text(
                           'Heart Rate',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Tooltip(
@@ -198,11 +172,22 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                     TextFormField(
                       controller: heartRateController,
                       keyboardType: TextInputType.number,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                       decoration: InputDecoration(
                         hintText: '60-100',
                         suffixText: 'bpm',
                         errorText: _heartRateError,
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Heart rate is required';
+                        }
+                        final val = double.tryParse(value);
+                        if (val == null) return 'Enter a valid number';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 18),
                     // GSR
@@ -212,7 +197,10 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                         const SizedBox(width: 8),
                         Text(
                           'Galvanic Skin Response (GSR)',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Tooltip(
@@ -228,11 +216,22 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                     TextFormField(
                       controller: gsrController,
                       keyboardType: TextInputType.number,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                       decoration: InputDecoration(
                         hintText: '2-15',
                         suffixText: 'µS',
                         errorText: _gsrError,
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'GSR is required';
+                        }
+                        final val = double.tryParse(value);
+                        if (val == null) return 'Enter a valid number';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 18),
                     // Temperature
@@ -242,7 +241,10 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                         const SizedBox(width: 8),
                         Text(
                           'Body Temperature',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Tooltip(
@@ -258,16 +260,27 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                     TextFormField(
                       controller: tempController,
                       keyboardType: TextInputType.number,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                       decoration: InputDecoration(
                         hintText: '36.5',
                         suffixText: '°C',
                         errorText: _tempError,
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Temperature is required';
+                        }
+                        final val = double.tryParse(value);
+                        if (val == null) return 'Enter a valid number';
+                        return null;
+                      },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -290,16 +303,18 @@ class _SensorDataScreenState extends State<SensorDataScreen> {
                       _tempError = null;
                     });
 
-                    double? score = calculatePhysiologicalScore();
+                    if (_formKey.currentState?.validate() ?? false) {
+                      double? score = calculatePhysiologicalScore();
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) =>
-                                ResultsScreen(physiologicalScore: score),
-                      ),
-                    );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  ResultsScreen(physiologicalScore: score),
+                        ),
+                      );
+                    }
                   },
                   child: const Text('Next  →'),
                 ),

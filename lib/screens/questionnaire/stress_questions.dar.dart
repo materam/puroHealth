@@ -1,22 +1,31 @@
-import 'package:flutter/material.dart'; // <-- Import your sensor data screen
-import '../sensor_data/sensor_data_screen.dart'; // adjust path if needed
+import 'package:flutter/material.dart';
+import '../sensor_data/sensor_data_screen.dart';
 
-class StressQuestionsPage extends StatefulWidget {
+class StressQuestionPage extends StatefulWidget {
   final String category;
-  const StressQuestionsPage({super.key, required this.category});
+  const StressQuestionPage({super.key, required this.category});
 
   @override
-  State<StressQuestionsPage> createState() => _StressQuestionsPageState();
+  State<StressQuestionPage> createState() => _StressQuestionPageState();
 }
 
-class _StressQuestionsPageState extends State<StressQuestionsPage> {
+class _StressQuestionPageState extends State<StressQuestionPage> {
   late List<String> questions;
-  List<int?> answers = List.filled(10, null);
+  final List<String> options = [
+    "Never", // 0
+    "Almost Never", // 1
+    "Sometimes", // 2
+    "Fairly Often", // 3
+    "Very Often", // 4
+  ];
+  int current = 0;
+  List<int?> answers = [];
 
   @override
   void initState() {
     super.initState();
     questions = _getQuestions(widget.category);
+    answers = List.filled(questions.length, null);
   }
 
   List<String> _getQuestions(String category) {
@@ -63,162 +72,180 @@ class _StressQuestionsPageState extends State<StressQuestionsPage> {
     }
   }
 
-  final List<String> options = [
-    "Never",
-    "Almost Never",
-    "Sometimes",
-    "Fairly Often",
-    "Very Often",
-  ];
+  void next() {
+    if (current < questions.length - 1) {
+      setState(() => current++);
+    } else {
+      // Calculate total stress score
+      int totalScore = answers.fold(0, (sum, val) => sum + (val ?? 0));
+      // Pass the score to the next screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => SensorDataScreen(
+                previousAnswers: {
+                  'category': widget.category,
+                  'answers': answers,
+                  'stressScore': totalScore,
+                },
+              ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF10131A) : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: 'Smart',
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+        centerTitle: true,
+        title: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 18),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white10 : Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "Question ",
+                  style: TextStyle(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              TextSpan(
-                text: ' Health',
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 22,
+                TextSpan(
+                  text: "${current + 1}",
+                  style: TextStyle(
+                    color: Colors.lightBlueAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
-              ),
-            ],
+                TextSpan(
+                  text: " of ${questions.length}",
+                  style: TextStyle(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.brightness_6), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
-        ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            Text(
-              'Perceived Stress Scale',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+            // Progress bar
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 24),
+              child: LinearProgressIndicator(
+                value: (current + 1) / questions.length,
+                backgroundColor: isDark ? Colors.white12 : Colors.grey[200],
+                color: Colors.lightBlueAccent,
+                minHeight: 5,
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
             const SizedBox(height: 8),
+            // Question
             Text(
-              'Step 1 of 3: Answer all 10 questions about your feelings and thoughts during the last month',
+              questions[current],
               style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Category: ${widget.category}',
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.grey[400] : Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 24),
-            ...List.generate(10, (index) {
-              return Card(
-                color: isDark ? const Color(0xFF181C23) : Colors.grey[100],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                margin: const EdgeInsets.only(bottom: 20),
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        questions[index],
-                        style: TextStyle(
+            const SizedBox(height: 32),
+            // Options
+            ...List.generate(options.length, (i) {
+              final selected = answers[current] == i;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      color:
+                          selected
+                              ? Colors.lightBlueAccent.withAlpha(
+                                (0.08 * 255).toInt(),
+                              )
+                              : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow:
+                          selected
+                              ? [
+                                BoxShadow(
+                                  color: Colors.lightBlueAccent.withAlpha(
+                                    (0.25 * 255).toInt(),
+                                  ),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                              : [],
+                    ),
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color:
+                              selected
+                                  ? Colors.lightBlueAccent
+                                  : (isDark
+                                      ? Colors.white24
+                                      : Colors.grey[400]!),
+                          width: 2,
+                        ),
+                        backgroundColor: Colors.transparent,
+                        foregroundColor:
+                            selected ? Colors.lightBlueAccent : textColor,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        textStyle: const TextStyle(
                           fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      ...List.generate(options.length, (optIdx) {
-                        return RadioListTile<int>(
-                          value: optIdx,
-                          groupValue: answers[index],
-                          onChanged: (val) {
-                            setState(() {
-                              answers[index] = val;
-                            });
-                          },
-                          title: Text(
-                            options[optIdx],
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          activeColor: Colors.lightBlueAccent,
-                          contentPadding: EdgeInsets.zero,
-                        );
-                      }),
-                    ],
+                      onPressed: () {
+                        setState(() => answers[current] = i);
+                      },
+                      child: Center(child: Text(options[i])),
+                    ),
                   ),
                 ),
               );
             }),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightBlueAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onPressed: () {
-                  // Check if all questions are answered
-                  if (answers.any((a) => a == null)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Please answer all questions before proceeding.',
-                        ),
-                      ),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SensorDataScreen(),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Next  →'),
+            const Spacer(),
+            // Next button
+            Align(
+              alignment: Alignment.bottomRight,
+              child: FloatingActionButton(
+                backgroundColor: Colors.lightBlueAccent,
+                onPressed: answers[current] != null ? next : null,
+                child: const Icon(Icons.arrow_upward, color: Colors.white),
               ),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

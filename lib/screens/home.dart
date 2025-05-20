@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'stress_assessment.dart';
 import 'guided_session.dart';
-import '../main.dart'; // adjust the path if needed
+import '../main.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -46,7 +46,7 @@ class HomePage extends StatelessWidget {
                       : ThemeMode.dark;
             },
           ),
-          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
+          //conButton(icon: const Icon(Icons.share), onPressed: () {}),
         ],
       ),
       body: Padding(
@@ -68,8 +68,10 @@ class HomePage extends StatelessWidget {
               title: 'Stress Assessment',
               subtitle: 'Complete a comprehensive stress evaluation',
               description:
-              'Answer a few questions and provide optional biometric data for a complete assessment of your current stress levels.',
+                  'Answer a few questions and provide optional biometric data for a complete assessment of your current stress levels.',
               buttonText: 'Start Assessment',
+              icon: Icons.assignment_turned_in_rounded,
+              color: Colors.blueAccent,
               onPressed: () {
                 Navigator.push(
                   context,
@@ -84,10 +86,11 @@ class HomePage extends StatelessWidget {
               title: 'Guided Wellness Session',
               subtitle: 'Begin a structured relaxation practice',
               description:
-              'Follow a 10-15 minute guided session with breathing exercises, mindfulness meditation, and gentle movement.',
+                  'Follow a 10–15 minute guided session with breathing exercises, mindfulness meditation, and gentle movement.',
               buttonText: 'Start Session',
+              icon: Icons.spa_rounded,
+              color: Colors.pinkAccent,
               onPressed: () {
-                // Navigate to the GuidedSessionPage
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -108,6 +111,8 @@ class _FeatureCard extends StatelessWidget {
   final String subtitle;
   final String description;
   final String buttonText;
+  final IconData icon;
+  final Color color;
   final VoidCallback onPressed;
 
   const _FeatureCard({
@@ -115,73 +120,90 @@ class _FeatureCard extends StatelessWidget {
     required this.subtitle,
     required this.description,
     required this.buttonText,
+    required this.icon,
+    required this.color,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF181C23) : Colors.grey[100],
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          // Corrected usage for border color opacity - using .r, .g, .b
-          color: isDark
-              ? Color.fromRGBO(Colors.grey[800]!.r.toInt(), Colors.grey[800]!.g.toInt(), Colors.grey[800]!.b.toInt(), 1.0)
-              : Color.fromRGBO(Colors.grey[300]!.r.toInt(), Colors.grey[300]!.g.toInt(), Colors.grey[300]!.b.toInt(), 1.0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 15,
-              color: isDark ? Colors.grey[400] : Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.grey[300] : Colors.grey[800],
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.lightBlueAccent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+    return Card(
+      color: isDark ? const Color(0xFF232B3E) : Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.13),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(icon, color: color, size: 28),
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 16,
+                color: isDark ? Colors.white70 : Colors.black87,
               ),
-              onPressed: onPressed,
-              child: Text(buttonText),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white60 : Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  shadowColor: color.withOpacity(0.2),
+                ),
+                onPressed: onPressed,
+                label: Text(buttonText),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
